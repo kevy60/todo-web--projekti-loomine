@@ -11,9 +11,9 @@ app.set('views', path.join(__dirname, 'views'))
 
 
 
+const readFile = (filename) => {
+	return new Promise((resolve, reject) => {
 
-
-app.get('/', (req, res) => {
 	fs.readFile('./tasks', 'utf8', (err, data) => {
 		if (err) {
 			console.error(err);
@@ -21,9 +21,51 @@ app.get('/', (req, res) => {
 		}
 
         const tasks = data.split("\n")
-	    res.render('index', {tasks: tasks})
+        resolve(tasks)
+    });
+  })
+}
+
+
+
+
+
+
+
+
+app.get('/', (req, res) => {
+	readFile('./tasks')
+	.then(tasks => {
+		console.log(tasks)
+		res.render('index', {tasks: tasks})
 	 });
 })
+
+
+
+app.use(express.urlencoded({extended: true}));
+
+
+
+app.post('/', (req, res) => {
+  readFile('/.tasks')
+   .then(tasks => {
+    tasks.push(req.body.task)
+    const data = tasks.join("\n")
+    fs.writeFile('./tasks', data, err => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      res.redirect('/')
+    })
+    });
+});
+
+
+
+
+
 
 
 app.listen(3001, () => {
